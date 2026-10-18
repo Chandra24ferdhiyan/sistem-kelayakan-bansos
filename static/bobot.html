@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Bobot Kriteria - SPK Bansos</title>
+    <meta name="description" content="Pengaturan bobot kriteria metode SAW untuk klasifikasi kelayakan penerima bansos">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- Toast Container -->
+<div class="toast-wrapper" id="toastContainer"></div>
+
+<div class="app-container">
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-icon"><img src="/static/image/icon%202.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 4px;"></div>
+            <div class="brand-text">
+                <span class="brand-title">SPK Bansos</span>
+                <span class="brand-sub">Kec. Paranggupito</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard" class="nav-item"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+            <a href="/penduduk" class="nav-item"><i class="bi bi-people"></i> Data Penduduk</a>
+            <a href="/bobot" class="nav-item active"><i class="bi bi-sliders"></i> Pengaturan Bobot</a>
+            <a href="/perhitungan" class="nav-item"><i class="bi bi-calculator"></i> Hasil Klasifikasi</a>
+            <a href="/laporan" class="nav-item"><i class="bi bi-printer"></i> Cetak Laporan</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button onclick="logout()" class="btn btn-outline-danger w-100 btn-sm"><i class="bi bi-box-arrow-left"></i> Logout</button>
+        </div>
+    </aside>
+
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h1 class="page-title">Pengaturan Bobot Kriteria</h1>
+                <small style="color: rgba(255,255,255,0.6); font-size: 0.72rem; font-weight: 500;">Atur prioritas kriteria penilaian bansos</small>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="glass-card p-4 fade-in-up">
+                        <div class="d-flex align-items-start gap-3 p-3 mb-4" style="background: linear-gradient(135deg, rgba(0,91,102,0.04) 0%, rgba(0,91,102,0.01) 100%); border-radius: 12px; border: 1px solid rgba(0,91,102,0.08);">
+                            <i class="bi bi-info-circle-fill" style="color: var(--primary-color); font-size: 1.2rem; margin-top: 2px;"></i>
+                            <div style="font-size: 0.85rem; color: var(--text-main); line-height: 1.6;">
+                                Total bobot dari semua kriteria harus sama dengan <strong>1.0 (100%)</strong>. 
+                                Atur prioritas kriteria penilaian bansos sesuai kondisi aktual lapangan.
+                            </div>
+                        </div>
+
+                        <form id="formBobot">
+                            <div class="mb-4 d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="width: 36px; height: 36px; background: linear-gradient(135deg, rgba(0,91,102,0.1), rgba(0,91,102,0.04)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-sliders" style="color: var(--primary-color); font-size: 1.1rem;"></i>
+                                    </div>
+                                    <h6 class="fw-bold m-0" style="font-size: 0.95rem;">Daftar Kriteria SAW</h6>
+                                </div>
+                                <span id="totalBadge" style="padding: 0.45rem 1rem; border-radius: 20px; font-size: 0.82rem; font-weight: 700; transition: all 0.3s;">Total: 1.00</span>
+                            </div>
+
+                            <div id="kriteriaContainer">
+                                <!-- Data dimuat via JS -->
+                                <div class="text-center py-4 text-muted">
+                                    <div class="spinner-border spinner-border-sm me-2"></div>Memuat data kriteria...
+                                </div>
+                            </div>
+
+                            <hr class="my-4" style="border-top: 1px solid rgba(0, 91, 102, 0.15); opacity: 1;">
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary px-4" id="btnSaveBobot">
+                                    <i class="bi bi-save me-2"></i>Simpan Perubahan Bobot
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+// ============================================
+// TOAST NOTIFICATION SYSTEM
+// ============================================
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const icons = {
+        success: 'bi-check-circle-fill',
+        error: 'bi-exclamation-triangle-fill',
+        info: 'bi-info-circle-fill'
+    };
+    
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <i class="bi ${icons[type] || icons.info} toast-icon"></i>
+        <span class="toast-msg">${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+    `;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('toast-hiding');
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+let bobotData = [];
+
+async function loadBobot() {
+    try {
+        const res = await fetch('/api/bobot');
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        const json = await res.json();
+        bobotData = json.data;
+        
+        const kriteriaDesc = {
+            'pendapatan': 'Pendapatan bulanan warga (semakin rendah semakin layak)',
+            'luas_lahan': 'Luas lahan yang dimiliki (semakin kecil semakin layak)',
+            'jumlah_tanggungan': 'Jumlah anggota keluarga tanggungan (semakin banyak semakin layak)',
+            'kepadatan_penduduk': 'Kepadatan penduduk di wilayah domisili (semakin padat semakin prioritas)'
+        };
+
+        document.getElementById('kriteriaContainer').innerHTML = bobotData.map(b => `
+            <div class="glass-card p-3 mb-3 border" style="background: rgba(0, 91, 102, 0.02); border-color: rgba(0, 91, 102, 0.15) !important;">
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <h6 class="fw-bold mb-1">${b.nama_kriteria}</h6>
+                        <span class="badge ${b.tipe === 'benefit' ? 'bg-success' : 'bg-primary'} bg-opacity-25 text-${b.tipe === 'benefit' ? 'success' : 'primary'} border border-${b.tipe === 'benefit' ? 'success' : 'primary'}">
+                            TIPE: ${b.tipe.toUpperCase()}
+                        </span>
+                        <small class="text-muted d-block mt-1">
+                            ${kriteriaDesc[b.kode_kriteria] || (b.tipe === 'benefit' ? 'Semakin besar nilai semakin layak' : 'Semakin kecil nilai semakin layak')}
+                        </small>
+                    </div>
+                    <div class="col-md-5 mt-2 mt-md-0">
+                        <input type="range" class="form-range bobot-slider" min="0" max="1" step="0.05" value="${b.bobot}" data-kode="${b.kode_kriteria}">
+                        <div class="d-flex justify-content-between text-muted" style="font-size: 0.65rem;">
+                            <span>0%</span>
+                            <span>50%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-end mt-2 mt-md-0">
+                        <span class="fs-4 fw-bold bobot-val" style="color: var(--primary-color) !important;" id="val_${b.kode_kriteria}">${Number(b.bobot).toFixed(2)}</span>
+                        <small class="text-muted d-block">${(Number(b.bobot) * 100).toFixed(0)}%</small>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        document.querySelectorAll('.bobot-slider').forEach(slider => {
+            slider.addEventListener('input', (e) => {
+                const kode = e.target.dataset.kode;
+                const val = Number(e.target.value);
+                document.getElementById(`val_${kode}`).textContent = val.toFixed(2);
+                // Update percentage display
+                document.getElementById(`val_${kode}`).nextElementSibling.textContent = `${(val * 100).toFixed(0)}%`;
+                updateTotal();
+            });
+        });
+        updateTotal();
+    } catch(err) {
+        console.error(err);
+        showToast('Gagal memuat data bobot kriteria', 'error');
+    }
+}
+
+function updateTotal() {
+    let total = 0;
+    document.querySelectorAll('.bobot-slider').forEach(s => total += parseFloat(s.value));
+    const badge = document.getElementById('totalBadge');
+    badge.textContent = `Total: ${total.toFixed(2)} (${(total * 100).toFixed(0)}%)`;
+    
+    if(Math.abs(total - 1.0) < 0.01) {
+        badge.style.background = 'linear-gradient(135deg, rgba(46,125,50,0.1), rgba(46,125,50,0.05))';
+        badge.style.color = 'var(--green)';
+        badge.style.border = '1px solid rgba(46,125,50,0.2)';
+    } else {
+        badge.style.background = 'linear-gradient(135deg, rgba(198,40,40,0.1), rgba(198,40,40,0.05))';
+        badge.style.color = 'var(--red)';
+        badge.style.border = '1px solid rgba(198,40,40,0.2)';
+    }
+}
+
+document.getElementById('formBobot').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let total = 0;
+    let payload = {};
+    
+    document.querySelectorAll('.bobot-slider').forEach(s => {
+        total += parseFloat(s.value);
+        payload[s.dataset.kode] = parseFloat(s.value);
+    });
+
+    if(Math.abs(total - 1.0) > 0.01) {
+        showToast(`Total bobot harus tepat 1.0 (100%). Total Anda: ${total.toFixed(2)}`, 'error');
+        return;
+    }
+
+    const btn = document.getElementById('btnSaveBobot');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
+
+    try {
+        const res = await fetch('/api/bobot', {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if(json.status === 'success') {
+            showToast('Bobot kriteria berhasil disimpan!', 'success');
+        } else {
+            showToast(json.message || 'Gagal menyimpan bobot', 'error');
+        }
+    } catch(err) {
+        showToast('Gagal terhubung ke server', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-save me-2"></i>Simpan Perubahan Bobot';
+    }
+});
+
+async function logout() {
+    await fetch('/api/logout', {method:'POST'});
+    window.location.href = '/';
+}
+
+document.addEventListener('DOMContentLoaded', loadBobot);
+</script>
+</body>
+</html>

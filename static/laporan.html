@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan - SPK Bansos</title>
+    <meta name="description" content="Cetak laporan resmi hasil klasifikasi kelayakan penerima bantuan sosial">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .card.bg-white, .card.bg-white * {
+            color: #000 !important;
+        }
+        #tabelCetak thead th {
+            font-weight: bold;
+            background-color: #f2f2f2 !important;
+            color: #000 !important;
+            border: 1px solid #000 !important;
+        }
+        #tabelCetak td {
+            border: 1px solid #000 !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-icon"><img src="/static/image/icon%202.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 4px;"></div>
+            <div class="brand-text">
+                <span class="brand-title">SPK Bansos</span>
+                <span class="brand-sub">Kec. Paranggupito</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard" class="nav-item"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+            <a href="/penduduk" class="nav-item"><i class="bi bi-people"></i> Data Penduduk</a>
+            <a href="/bobot" class="nav-item"><i class="bi bi-sliders"></i> Pengaturan Bobot</a>
+            <a href="/perhitungan" class="nav-item"><i class="bi bi-calculator"></i> Hasil Klasifikasi</a>
+            <a href="/laporan" class="nav-item active"><i class="bi bi-printer"></i> Cetak Laporan</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button onclick="logout()" class="btn btn-outline-danger w-100 btn-sm"><i class="bi bi-box-arrow-left"></i> Logout</button>
+        </div>
+    </aside>
+
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h1 class="page-title">Dokumen Laporan Final</h1>
+                <small style="color: rgba(255,255,255,0.6); font-size: 0.72rem; font-weight: 500;">Cetak surat keputusan penerima bansos</small>
+            </div>
+            <button class="btn btn-primary" onclick="window.print()" style="animation: pulse 2s ease-in-out infinite;"><i class="bi bi-printer-fill me-2"></i>Cetak Laporan</button>
+        </header>
+
+        <div class="content-wrapper p-4 p-md-5">
+            <!-- Tampilan Kertas Cetak -->
+            <div class="card bg-white text-dark w-100 mx-auto fade-in-up" style="max-width: 900px; box-shadow: 0 4px 8px rgba(0,0,0,0.05), 0 20px 60px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04); border-radius: 4px; border: none;">
+                <div class="card-body p-5">
+                    
+                    <!-- Kop Surat -->
+                    <div class="text-center border-bottom border-dark border-2 pb-3 mb-4">
+                        <h4 class="fw-bold mb-1 text-uppercase">Pemerintah Kabupaten Wonogiri</h4>
+                        <h3 class="fw-bold mb-1 text-uppercase">Kecamatan Paranggupito</h3>
+                        <p class="mb-0 small">Jl. Raya Paranggupito No. 1, Kab. Wonogiri, Jawa Tengah 57678</p>
+                    </div>
+
+                    <h5 class="text-center fw-bold text-decoration-underline mb-4">SURAT KEPUTUSAN PENERIMA BANTUAN SOSIAL</h5>
+                    
+                    <p class="mb-3 text-justify" id="paragrafPengantar">
+                        Berdasarkan hasil analisis Sistem Pendukung Keputusan menggunakan metode Simple Additive Weighting (SAW) terhadap data kondisi sosio-ekonomi dan kepadatan penduduk warga Kecamatan Paranggupito, berikut adalah daftar warga yang ditetapkan menerima Bantuan Sosial untuk Tahun Anggaran 2026:
+                    </p>
+
+                    <!-- Tabel Cetak -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered border-dark table-sm mt-3" id="tabelCetak">
+                            <thead class="table-light border-dark">
+                                <tr class="text-center">
+                                    <th>No</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>Alamat / Desa</th>
+                                    <th>Skor Kelayakan</th>
+                                    <th>Status Keputusan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelBody">
+                                <tr><td colspan="5" class="text-center">Memuat dokumen...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="small text-muted mt-3" id="keteranganTambahan"></p>
+
+                    <div class="row mt-5 pt-4">
+                        <div class="col-6"></div>
+                        <div class="col-6 text-center">
+                            <p class="mb-5">Paranggupito, <span id="currentDate"></span><br>Mengetahui,<br><b>Camat Paranggupito</b></p>
+                            <br>
+                            <p class="fw-bold text-decoration-underline mb-0">( ........................................ )</p>
+                            <p class="mb-0">NIP. .....................................</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+
+async function loadData() {
+    try {
+        const res = await fetch('/api/penduduk');
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        const json = await res.json();
+        
+        if (!json.data || json.data.length === 0) {
+            document.getElementById('paragrafPengantar').textContent = 
+                'Belum ada data warga yang dapat diklasifikasikan. Silakan tambahkan data penduduk terlebih dahulu untuk menghasilkan laporan.';
+            document.getElementById('tabelBody').innerHTML = '<tr><td colspan="5" class="text-center py-3">Belum ada data penduduk.</td></tr>';
+            return;
+        }
+
+        // Filter hanya yang Sangat Layak dan Layak
+        const penerima = json.data.filter(d => d.skor >= 0.5);
+        const tidakLayak = json.data.filter(d => d.skor < 0.5);
+
+        const tbody = document.getElementById('tabelBody');
+        const pengantar = document.getElementById('paragrafPengantar');
+        const keterangan = document.getElementById('keteranganTambahan');
+        
+        if(penerima.length === 0) {
+            pengantar.textContent = 
+                'Berdasarkan hasil analisis Sistem Pendukung Keputusan menggunakan metode Simple Additive Weighting (SAW) terhadap data kondisi sosio-ekonomi dan kepadatan penduduk warga Kecamatan Paranggupito, tidak ditemukan warga yang memenuhi kriteria kelayakan penerima Bantuan Sosial untuk Tahun Anggaran 2026.';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 fst-italic">Tidak ada warga yang memenuhi kriteria kelayakan (skor ≥ 0.5).</td></tr>';
+            keterangan.textContent = `Catatan: Total ${json.data.length} warga dianalisis, seluruhnya mendapat status "Tidak Layak".`;
+            return;
+        }
+
+        pengantar.textContent = 
+            `Berdasarkan hasil analisis Sistem Pendukung Keputusan menggunakan metode Simple Additive Weighting (SAW) terhadap data kondisi sosio-ekonomi dan kepadatan penduduk warga Kecamatan Paranggupito, berikut adalah daftar warga yang ditetapkan menerima Bantuan Sosial untuk Tahun Anggaran 2026:`;
+
+        let no = 1;
+        tbody.innerHTML = penerima.map(d => `
+            <tr>
+                <td class="text-center border-dark">${no++}</td>
+                <td class="fw-bold border-dark">${escapeHtml(d.nama)}</td>
+                <td class="border-dark">${escapeHtml(d.alamat)}</td>
+                <td class="text-center border-dark">${d.skor.toFixed(4)}</td>
+                <td class="text-center fw-bold border-dark">${d.klasifikasi.toUpperCase()}</td>
+            </tr>
+        `).join('');
+
+        // Keterangan tambahan
+        if (tidakLayak.length > 0) {
+            keterangan.textContent = `Catatan: Total ${json.data.length} warga dianalisis. ${penerima.length} warga memenuhi kriteria kelayakan, ${tidakLayak.length} warga tidak memenuhi kriteria.`;
+        } else {
+            keterangan.textContent = `Catatan: Total ${json.data.length} warga dianalisis, seluruhnya memenuhi kriteria kelayakan.`;
+        }
+
+    } catch(err) {
+        console.error(err);
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+}
+
+async function logout() {
+    await fetch('/api/logout', {method:'POST'});
+    window.location.href = '/';
+}
+
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>

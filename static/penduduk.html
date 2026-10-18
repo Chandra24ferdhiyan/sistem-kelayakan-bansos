@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Data Penduduk - SPK Bansos</title>
+    <meta name="description" content="Kelola data penduduk untuk klasifikasi kelayakan penerima bantuan sosial">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- Toast Container -->
+<div class="toast-wrapper" id="toastContainer"></div>
+
+<div class="app-container">
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-icon"><img src="/static/image/icon%202.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 4px;"></div>
+            <div class="brand-text">
+                <span class="brand-title">SPK Bansos</span>
+                <span class="brand-sub">Kec. Paranggupito</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard" class="nav-item"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+            <a href="/penduduk" class="nav-item active"><i class="bi bi-people"></i> Data Penduduk</a>
+            <a href="/bobot" class="nav-item"><i class="bi bi-sliders"></i> Pengaturan Bobot</a>
+            <a href="/perhitungan" class="nav-item"><i class="bi bi-calculator"></i> Hasil Klasifikasi</a>
+            <a href="/laporan" class="nav-item"><i class="bi bi-printer"></i> Cetak Laporan</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button onclick="logout()" class="btn btn-outline-danger w-100 btn-sm"><i class="bi bi-box-arrow-left"></i> Logout</button>
+        </div>
+    </aside>
+
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h1 class="page-title">Kelola Data Penduduk</h1>
+                <small style="color: rgba(255,255,255,0.6); font-size: 0.72rem; font-weight: 500;">Tambah, edit, dan kelola data warga</small>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-7">
+                    <div class="glass-card p-4 fade-in-up" style="height: 100%;">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, rgba(0,91,102,0.1), rgba(0,91,102,0.04)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-person-plus-fill" style="color: var(--primary-color); font-size: 1.1rem;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0" style="font-size: 0.95rem;">Form Input Data Penduduk</h6>
+                                <small class="text-muted" style="font-size: 0.72rem;">Masukkan data kriteria sosio-ekonomi warga</small>
+                            </div>
+                        </div>
+                        <form id="formPenduduk" autocomplete="off">
+                            <input type="hidden" id="editId" value="">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="inputNama">Nama Lengkap</label>
+                                    <input type="text" class="form-control" id="inputNama" required placeholder="Masukkan nama lengkap">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="inputAlamat">Alamat Lengkap (Desa, RT/RW)</label>
+                                    <input type="text" class="form-control" id="inputAlamat" required placeholder="Contoh: Desa Paranggupito, RT 01/RW 02" list="desaList">
+                                    <datalist id="desaList">
+                                        <option value="Desa Paranggupito">
+                                        <option value="Desa Gudangharjo">
+                                        <option value="Desa Songbanyu">
+                                        <option value="Desa Parangkidang">
+                                        <option value="Desa Sambiharjo">
+                                    </datalist>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="inputPendapatan">Pendapatan (Rp/bulan)</label>
+                                    <input type="number" class="form-control" id="inputPendapatan" required min="0" placeholder="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="inputTanggungan">Jumlah Tanggungan</label>
+                                    <input type="number" class="form-control" id="inputTanggungan" required min="0" placeholder="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="inputLahan">Luas Lahan (m²)</label>
+                                    <input type="number" class="form-control" id="inputLahan" required min="0" step="0.1" placeholder="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="inputKepadatan">Kepadatan (jiwa/km²)</label>
+                                    <input type="number" class="form-control" id="inputKepadatan" required min="0" step="0.1" placeholder="0">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <button type="button" class="btn btn-secondary" onclick="resetForm()" id="btnReset">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="btnSubmit">
+                                    <i class="bi bi-save me-1"></i> Simpan Data
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="glass-card p-4 fade-in-up" style="animation-delay: 0.05s; height: 100%;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 36px; height: 36px; background: linear-gradient(135deg, rgba(46,125,50,0.1), rgba(46,125,50,0.04)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-file-earmark-spreadsheet-fill" style="color: var(--green); font-size: 1.1rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0" style="font-size: 0.95rem;">Import Excel / CSV</h6>
+                                    <small class="text-muted" style="font-size: 0.72rem;">Unggah data massal sekaligus</small>
+                                </div>
+                            </div>
+                            <a href="/api/penduduk/template" class="btn btn-outline-success btn-sm fw-semibold" style="font-size: 0.72rem; padding: 0.3rem 0.7rem; border-radius: 8px;"><i class="bi bi-download me-1"></i>Templat</a>
+                        </div>
+                        
+                        <!-- Drag & Drop Area -->
+                        <div class="import-dropzone" id="dropzone" style="border: 2px dashed rgba(0,91,102,0.2); border-radius: 14px; padding: 2rem 1rem; text-align: center; background: rgba(0,91,102,0.015); transition: all 0.3s; cursor: pointer;">
+                            <i class="bi bi-cloud-arrow-up-fill mb-2" style="font-size: 2.5rem; display: block; color: var(--primary-color); animation: floatIcon 3s ease-in-out infinite;"></i>
+                            <span class="d-block fw-semibold" style="font-size: 0.88rem; color: var(--text-main);">Klik atau seret berkas ke sini</span>
+                            <span class="text-muted d-block mt-1" style="font-size: 0.75rem;">Mendukung .xlsx, .xls, .csv</span>
+                            <input type="file" id="fileImport" accept=".xlsx,.xls,.csv" style="display: none;">
+                        </div>
+                        
+                        <!-- File info & progress -->
+                        <div id="fileInfo" class="mt-3 d-none">
+                            <div class="p-3 rounded border" style="background: rgba(0, 91, 102, 0.04); border-color: rgba(0, 91, 102, 0.15) !important;">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="fw-semibold text-truncate small me-2" id="fileName" style="max-width: 75%;">nama_file.xlsx</span>
+                                    <button class="btn-close" type="button" id="btnCancelFile" style="font-size: 0.75rem;"></button>
+                                </div>
+                                <div class="progress" style="height: 6px; background: rgba(0,0,0,0.1);">
+                                    <div class="progress-bar bg-info" role="progressbar" id="progressBar" style="width: 0%"></div>
+                                </div>
+                                <small class="text-info mt-1 d-block" id="uploadStatus" style="font-size: 0.75rem;">Siap diunggah...</small>
+                            </div>
+                            <button type="button" class="btn btn-info w-100 mt-3" id="btnSubmitImport">
+                                <i class="bi bi-cloud-arrow-up me-2"></i>Mulai Impor Data
+                            </button>
+                        </div>
+                        
+                        <!-- Error report area -->
+                        <div id="errorReport" class="mt-3 d-none alert alert-danger border-danger bg-danger bg-opacity-10" style="max-height: 180px; overflow-y: auto;">
+                            <h6 class="fw-bold mb-2 small"><i class="bi bi-exclamation-octagon me-2"></i>Kesalahan data ditemukan:</h6>
+                            <ul id="errorList" class="ps-3 mb-0 small" style="list-style-type: decimal;"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card fade-in-up" style="animation-delay: 0.1s;">
+                <div class="d-flex align-items-center gap-2 p-4 pb-0">
+                    <div style="width: 36px; height: 36px; background: linear-gradient(135deg, rgba(2,136,209,0.1), rgba(2,136,209,0.04)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-table" style="color: var(--blue); font-size: 1.1rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0" style="font-size: 0.95rem;">Data Penduduk Terdata</h6>
+                        <small class="text-muted" style="font-size: 0.72rem;">Daftar seluruh warga yang telah diinput</small>
+                    </div>
+                </div>
+                <div class="table-responsive p-3 pt-2">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;" class="text-center">No</th>
+                                <th>Nama Lengkap</th>
+                                <th>Alamat / Desa</th>
+                                <th class="text-end">Pendapatan</th>
+                                <th class="text-center">Tanggungan</th>
+                                <th class="text-end">Lahan</th>
+                                <th class="text-end">Kepadatan</th>
+                                <th class="text-center" style="width: 90px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelBody">
+                            <tr><td colspan="8" class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm text-primary me-2"></div>Memuat data...
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+// ============================================
+// TOAST NOTIFICATION SYSTEM
+// ============================================
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const icons = {
+        success: 'bi-check-circle-fill',
+        error: 'bi-exclamation-triangle-fill',
+        info: 'bi-info-circle-fill'
+    };
+    
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <i class="bi ${icons[type] || icons.info} toast-icon"></i>
+        <span class="toast-msg">${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+    `;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('toast-hiding');
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+// ============================================
+// DATA LOADING
+// ============================================
+async function loadData() {
+    try {
+        const res = await fetch('/api/penduduk');
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        const json = await res.json();
+        const tbody = document.getElementById('tabelBody');
+        
+        if(!json.raw_data || json.raw_data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8">
+                <div class="empty-state">
+                    <i class="bi bi-people"></i>
+                    <h5>Belum Ada Data Penduduk</h5>
+                    <p>Gunakan form di atas untuk menambahkan data warga.</p>
+                </div>
+            </td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = json.raw_data.map((d, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td class="fw-bold">${escapeHtml(d.nama)}</td>
+                <td>${escapeHtml(d.alamat)}</td>
+                <td class="text-end">Rp ${Number(d.pendapatan).toLocaleString('id-ID')}</td>
+                <td class="text-center">${d.jumlah_tanggungan}</td>
+                <td class="text-end">${Number(d.luas_lahan).toFixed(2)} m²</td>
+                <td class="text-end">${Number(d.kepadatan_penduduk).toFixed(2)}</td>
+                <td class="text-center">
+                    <button class="action-btn me-1" onclick="editData(${d.id})" title="Edit"><i class="bi bi-pencil"></i></button>
+                    <button class="action-btn del" onclick="hapusData(${d.id}, '${escapeHtml(d.nama)}')" title="Hapus"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    } catch(err) {
+        console.error(err);
+        showToast('Gagal memuat data penduduk', 'error');
+    }
+}
+
+// HTML Escape untuk mencegah XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+}
+
+// ============================================
+// FORM SUBMIT (TAMBAH / EDIT)
+// ============================================
+document.getElementById('formPenduduk').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('editId').value;
+    const btn = document.getElementById('btnSubmit');
+    
+    const body = {
+        nama: document.getElementById('inputNama').value.trim(),
+        alamat: document.getElementById('inputAlamat').value.trim(),
+        pendapatan: parseFloat(document.getElementById('inputPendapatan').value),
+        jumlah_tanggungan: parseInt(document.getElementById('inputTanggungan').value),
+        luas_lahan: parseFloat(document.getElementById('inputLahan').value),
+        kepadatan_penduduk: parseFloat(document.getElementById('inputKepadatan').value)
+    };
+
+    // Validasi frontend
+    if (!body.nama) { showToast('Nama tidak boleh kosong', 'error'); return; }
+    if (!body.alamat) { showToast('Alamat tidak boleh kosong', 'error'); return; }
+    if (isNaN(body.pendapatan) || body.pendapatan < 0) { showToast('Pendapatan tidak valid', 'error'); return; }
+    if (isNaN(body.jumlah_tanggungan) || body.jumlah_tanggungan < 0) { showToast('Jumlah tanggungan tidak valid', 'error'); return; }
+    if (isNaN(body.luas_lahan) || body.luas_lahan < 0) { showToast('Luas lahan tidak valid', 'error'); return; }
+    if (isNaN(body.kepadatan_penduduk) || body.kepadatan_penduduk < 0) { showToast('Kepadatan penduduk tidak valid', 'error'); return; }
+
+    const url = id ? `/api/penduduk/${id}` : '/api/penduduk';
+    const method = id ? 'PUT' : 'POST';
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...';
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+        const json = await res.json();
+        
+        if (res.ok) {
+            showToast(id ? 'Data berhasil diperbarui' : 'Data berhasil ditambahkan', 'success');
+            resetForm();
+            loadData();
+        } else {
+            showToast(json.message || 'Gagal menyimpan data', 'error');
+        }
+    } catch(err) {
+        showToast('Gagal terhubung ke server', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-save me-1"></i> Simpan Data';
+    }
+});
+
+// ============================================
+// EDIT DATA
+// ============================================
+async function editData(id) {
+    try {
+        const res = await fetch(`/api/penduduk/${id}`);
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        const json = await res.json();
+        if(json.status === 'success') {
+            const d = json.data;
+            document.getElementById('editId').value = d.id;
+            document.getElementById('inputNama').value = d.nama;
+            document.getElementById('inputAlamat').value = d.alamat;
+            document.getElementById('inputPendapatan').value = d.pendapatan;
+            document.getElementById('inputTanggungan').value = d.jumlah_tanggungan;
+            document.getElementById('inputLahan').value = d.luas_lahan;
+            document.getElementById('inputKepadatan').value = d.kepadatan_penduduk;
+            document.getElementById('btnSubmit').innerHTML = '<i class="bi bi-pencil-square me-1"></i> Update Data';
+            document.getElementById('formPenduduk').scrollIntoView({behavior: 'smooth', block: 'center'});
+            document.getElementById('inputNama').focus();
+            showToast('Data dimuat ke form. Silakan edit dan klik Update.', 'info');
+        }
+    } catch(err) {
+        showToast('Gagal memuat data untuk diedit', 'error');
+    }
+}
+
+// ============================================
+// HAPUS DATA
+// ============================================
+async function hapusData(id, nama) {
+    if(confirm(`Yakin ingin menghapus data "${nama}"?\nData yang dihapus tidak bisa dikembalikan.`)) {
+        try {
+            const res = await fetch(`/api/penduduk/${id}`, {method: 'DELETE'});
+            const json = await res.json();
+            if (res.ok) {
+                showToast(`Data "${nama}" berhasil dihapus`, 'success');
+                loadData();
+            } else {
+                showToast(json.message || 'Gagal menghapus data', 'error');
+            }
+        } catch(err) {
+            showToast('Gagal terhubung ke server', 'error');
+        }
+    }
+}
+
+function resetForm() {
+    document.getElementById('formPenduduk').reset();
+    document.getElementById('editId').value = '';
+    document.getElementById('btnSubmit').innerHTML = '<i class="bi bi-save me-1"></i> Simpan Data';
+}
+
+// ============================================
+// DRAG & DROP FILE IMPORT SYSTEM
+// ============================================
+const dropzone = document.getElementById('dropzone');
+const fileImport = document.getElementById('fileImport');
+const fileInfo = document.getElementById('fileInfo');
+const fileName = document.getElementById('fileName');
+const btnCancelFile = document.getElementById('btnCancelFile');
+const btnSubmitImport = document.getElementById('btnSubmitImport');
+const progressBar = document.getElementById('progressBar');
+const uploadStatus = document.getElementById('uploadStatus');
+const errorReport = document.getElementById('errorReport');
+const errorList = document.getElementById('errorList');
+
+let selectedFile = null;
+
+// Trigger file dialog
+dropzone.addEventListener('click', () => fileImport.click());
+
+// Drag & drop highlight
+['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = 'var(--primary-color)';
+        dropzone.style.background = 'rgba(0, 91, 102, 0.08)';
+    }, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = 'rgba(0, 91, 102, 0.25)';
+        dropzone.style.background = 'rgba(0, 91, 102, 0.02)';
+    }, false);
+});
+
+// Drop handler
+dropzone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files.length > 0) {
+        handleFileSelect(files[0]);
+    }
+});
+
+// Input change handler
+fileImport.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleFileSelect(e.target.files[0]);
+    }
+});
+
+function handleFileSelect(file) {
+    const validExtensions = ['xlsx', 'xls', 'csv'];
+    const ext = file.name.split('.').pop().toLowerCase();
+    
+    if (!validExtensions.includes(ext)) {
+        showToast('Format berkas tidak valid. Harap pilih file Excel atau CSV.', 'error');
+        resetImportState();
+        return;
+    }
+    
+    selectedFile = file;
+    fileName.textContent = file.name;
+    fileInfo.classList.remove('d-none');
+    progressBar.style.width = '0%';
+    uploadStatus.textContent = 'Siap diunggah...';
+    uploadStatus.className = 'text-info mt-1 d-block';
+    errorReport.classList.add('d-none');
+    errorList.innerHTML = '';
+}
+
+btnCancelFile.addEventListener('click', (e) => {
+    e.stopPropagation();
+    resetImportState();
+});
+
+function resetImportState() {
+    selectedFile = null;
+    fileImport.value = '';
+    fileInfo.classList.add('d-none');
+    errorReport.classList.add('d-none');
+    errorList.innerHTML = '';
+}
+
+btnSubmitImport.addEventListener('click', async () => {
+    if (!selectedFile) return;
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    
+    btnSubmitImport.disabled = true;
+    btnSubmitImport.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengunggah...';
+    progressBar.style.width = '50%';
+    uploadStatus.textContent = 'Memproses data di server...';
+    
+    try {
+        const res = await fetch('/api/penduduk/import', {
+            method: 'POST',
+            body: formData
+        });
+        const json = await res.json();
+        
+        if (res.ok) {
+            progressBar.style.width = '100%';
+            uploadStatus.textContent = 'Sukses!';
+            uploadStatus.className = 'text-success mt-1 d-block';
+            showToast(json.message || 'Impor data berhasil!', 'success');
+            
+            setTimeout(() => {
+                resetImportState();
+                loadData(); // Segarkan tabel data
+            }, 1000);
+        } else {
+            progressBar.style.width = '0%';
+            uploadStatus.textContent = 'Gagal!';
+            uploadStatus.className = 'text-danger mt-1 d-block';
+            
+            showToast(json.message || 'Gagal mengimpor data', 'error');
+            
+            if (json.errors && json.errors.length > 0) {
+                errorReport.classList.remove('d-none');
+                errorList.innerHTML = json.errors.map(err => `<li>${escapeHtml(err)}</li>`).join('');
+            }
+        }
+    } catch (err) {
+        progressBar.style.width = '0%';
+        uploadStatus.textContent = 'Gagal terhubung!';
+        uploadStatus.className = 'text-danger mt-1 d-block';
+        showToast('Koneksi terputus atau gagal terhubung ke server', 'error');
+    } finally {
+        btnSubmitImport.disabled = false;
+        btnSubmitImport.innerHTML = '<i class="bi bi-cloud-arrow-up me-2"></i>Mulai Impor Data';
+    }
+});
+
+async function logout() {
+    await fetch('/api/logout', {method:'POST'});
+    window.location.href = '/';
+}
+
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>

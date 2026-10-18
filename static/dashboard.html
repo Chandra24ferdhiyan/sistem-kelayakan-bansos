@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SPK Bansos Paranggupito</title>
+    <meta name="description" content="Dashboard analisis Sistem Pendukung Keputusan Klasifikasi Kelayakan Penerima Bansos">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- SIDEBAR -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-icon"><img src="/static/image/icon%202.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 4px;"></div>
+            <div class="brand-text">
+                <span class="brand-title">SPK Bansos</span>
+                <span class="brand-sub">Kec. Paranggupito</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard" class="nav-item active"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+            <a href="/penduduk" class="nav-item"><i class="bi bi-people"></i> Data Penduduk</a>
+            <a href="/bobot" class="nav-item"><i class="bi bi-sliders"></i> Pengaturan Bobot</a>
+            <a href="/perhitungan" class="nav-item"><i class="bi bi-calculator"></i> Hasil Klasifikasi</a>
+            <a href="/laporan" class="nav-item"><i class="bi bi-printer"></i> Cetak Laporan</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button onclick="logout()" class="btn btn-outline-danger w-100 btn-sm"><i class="bi bi-box-arrow-left me-1"></i> Logout</button>
+        </div>
+    </aside>
+
+    <!-- HAMBURGER MOBILE -->
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <h1 class="page-title">Dashboard Analisis</h1>
+                <small style="color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 500;">Selamat datang kembali, Petugas</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span style="background: rgba(255,184,0,0.15); color: var(--secondary-color); border: 1px solid rgba(255,184,0,0.25); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;">
+                    <i class="bi bi-calendar-event me-1"></i> TA 2026
+                </span>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Stats Row -->
+            <div class="row g-3 mb-4 stagger-children">
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+                        <div class="stat-info">
+                            <h3 id="statTotal">0</h3>
+                            <p>Total Warga</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+                        <div class="stat-info">
+                            <h3 id="statSangat">0</h3>
+                            <p>Sangat Layak</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon yellow"><i class="bi bi-exclamation-circle-fill"></i></div>
+                        <div class="stat-info">
+                            <h3 id="statLayak">0</h3>
+                            <p>Layak</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon red"><i class="bi bi-x-circle-fill"></i></div>
+                        <div class="stat-info">
+                            <h3 id="statTidak">0</h3>
+                            <p>Tidak Layak</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="glass-card p-4 h-100 fade-in-up">
+                        <div class="d-flex align-items-center gap-2 mb-4">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, rgba(0,91,102,0.1), rgba(0,91,102,0.04)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-cash-stack" style="color: var(--primary-color); font-size: 1.1rem;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0" style="font-size: 0.95rem;">Rata-rata Pendapatan Warga</h6>
+                                <small class="text-muted" style="font-size: 0.72rem;">Data pendapatan bulanan seluruh warga terdata</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center" style="min-height: 180px;">
+                            <div class="text-center">
+                                <h1 class="fw-bold" id="statRp" style="font-size: 2.8rem; letter-spacing: -0.03em; color: var(--primary-color); line-height: 1;">Rp 0</h1>
+                                <p class="text-muted mt-2 mb-0" style="font-size: 0.82rem;">per bulan</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card p-4 h-100 fade-in-up" style="animation-delay: 0.1s;">
+                        <div class="d-flex align-items-center gap-2 mb-4">
+                            <div style="width: 36px; height: 36px; background: linear-gradient(135deg, rgba(0,91,102,0.1), rgba(0,91,102,0.04)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-pie-chart-fill" style="color: var(--primary-color); font-size: 1.1rem;"></i>
+                            </div>
+                            <h6 class="fw-bold mb-0" style="font-size: 0.95rem;">Distribusi Kelayakan</h6>
+                        </div>
+                        <div id="chartArea">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                        <div id="emptyChart" class="d-none">
+                            <div class="empty-state" style="padding: 2rem 0.5rem;">
+                                <i class="bi bi-pie-chart" style="font-size: 2.5rem;"></i>
+                                <h5 style="font-size: 0.95rem;">Belum Ada Data</h5>
+                                <p style="font-size: 0.8rem;">Tambahkan data penduduk untuk melihat distribusi.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+// Animated counter
+function animateCounter(element, target, duration = 1200) {
+    const start = 0;
+    const startTime = performance.now();
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease out cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(start + (target - start) * eased);
+        element.textContent = current;
+        if (progress < 1) requestAnimationFrame(update);
+    }
+    if (target > 0) requestAnimationFrame(update);
+}
+
+let chartInstance = null;
+
+async function loadDashboard() {
+    try {
+        const res = await fetch('/api/dashboard');
+        if (res.status === 401) { window.location.href = '/login'; return; }
+        const json = await res.json();
+
+        if(json.status === 'success') {
+            // Animated counters
+            animateCounter(document.getElementById('statTotal'), json.total_warga);
+            animateCounter(document.getElementById('statSangat'), json.klasifikasi.sangat_layak);
+            animateCounter(document.getElementById('statLayak'), json.klasifikasi.layak);
+            animateCounter(document.getElementById('statTidak'), json.klasifikasi.tidak_layak);
+
+            // Animated Rp counter
+            const rpEl = document.getElementById('statRp');
+            const targetRp = Math.round(json.avg_pendapatan);
+            const startTime = performance.now();
+            function animateRp(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / 1500, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = Math.round(targetRp * eased);
+                rpEl.textContent = 'Rp ' + current.toLocaleString('id-ID');
+                if (progress < 1) requestAnimationFrame(animateRp);
+            }
+            if (targetRp > 0) requestAnimationFrame(animateRp);
+            else rpEl.textContent = 'Rp 0';
+
+            const totalData = json.klasifikasi.sangat_layak + json.klasifikasi.layak + json.klasifikasi.tidak_layak;
+
+            if (totalData === 0) {
+                document.getElementById('chartArea').classList.add('d-none');
+                document.getElementById('emptyChart').classList.remove('d-none');
+                return;
+            }
+
+            if (chartInstance) chartInstance.destroy();
+
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sangat Layak', 'Layak', 'Tidak Layak'],
+                    datasets: [{
+                        data: [
+                            json.klasifikasi.sangat_layak,
+                            json.klasifikasi.layak,
+                            json.klasifikasi.tidak_layak
+                        ],
+                        backgroundColor: ['#22c55e', '#eab308', '#ef4444'],
+                        borderWidth: 0,
+                        borderRadius: 6,
+                        spacing: 3
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#4E5D78',
+                                padding: 16,
+                                usePointStyle: true,
+                                pointStyleWidth: 10,
+                                font: { family: 'Inter', size: 11, weight: '600' }
+                            }
+                        }
+                    },
+                    cutout: '72%',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true,
+                        duration: 1200,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+    } catch(err) {
+        console.error("Gagal load dashboard:", err);
+    }
+}
+
+async function logout() {
+    await fetch('/api/logout', {method:'POST'});
+    window.location.href = '/';
+}
+
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>
